@@ -94,6 +94,16 @@
           </excludes>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.liquibase.maven.plugins</groupId>
+        <artifactId>liquibase-maven-plugin</artifactId>
+        <version>4.33.0</version>
+        <configuration>
+          <changeLogFile>src/main/resources/db/db.changelog-master.xml</changeLogFile>
+          <promptOnNonLocalDatabase>false</promptOnNonLocalDatabase>
+          <contexts>development,production</contexts>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
