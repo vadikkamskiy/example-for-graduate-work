@@ -1,6 +1,9 @@
 package ru.skypro.homework.dto;
 
 import lombok.Data;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
+
 
 @Data
 public class Register {
