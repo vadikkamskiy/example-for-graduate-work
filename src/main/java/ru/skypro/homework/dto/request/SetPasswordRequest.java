@@ -1,12 +1,11 @@
 package ru.skypro.homework.dto.request;
+import jakarta.validation.constraints.Size;
 import lombok.Data; 
 
 @Data
 public class SetPasswordRequest {
+    @Size(min = 8,max = 16)
     private String currentPassword;
-    @Size(min = 8,
-     message = "New password must be at least 8 characters long",
-     max = 16,
-     message = "New password must be at most 16 characters long")
+    @Size(min = 8, max = 16)
     private String newPassword;
 }

@@ -1,16 +1,20 @@
-package ru.skypro.homework.dto.Response;
+package ru.skypro.homework.dto.response;
+import ru.skypro.homework.dto.Role;
+
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class UserResponse {
 
     private String username;
     private String firstName;
     private String lastName;
     private String phone;
-    private String role;
+    private Role role;
 
-    public UserResponse(String username, String firstName, String lastName, String phone, String role) {
+    public UserResponse(String username, String firstName, String lastName, String phone, Role role) {
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
