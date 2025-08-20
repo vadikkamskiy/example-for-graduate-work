@@ -5,6 +5,7 @@ import ru.skypro.homework.service.UsersService;
 import ru.skypro.homework.dto.response.UserResponse;
 import ru.skypro.homework.dto.request.SetPasswordRequest;
 import ru.skypro.homework.dto.request.UpdateUserRequest;
+import ru.skypro.homework.dto.response.UpdateUserResponse;
 import ru.skypro.homework.dto.User;
 import lombok.RequiredArgsConstructor;
 
@@ -17,10 +18,13 @@ public class UserController {
         this.usersService = usersService;
     }
 
-    @PostMapping("/set_password")
-    public ResponseEntity<UserResponse> setPassword(@RequestBody SetPasswordRequest request) {
-        // Логика для установки пароля пользователя
-        return ResponseEntity.ok().build();
+    @PostMapping("set_password")
+    public ResponseEntity setPassword(@RequestBody SetPasswordRequest request) {
+        if (usersService.setPassword(request.getCurrentPassword(), request.getNewPassword())) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
     }
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getUser() {
@@ -31,15 +35,13 @@ public class UserController {
         return ResponseEntity.notFound().build();
     }
 }
-    @PutMapping("/me")
-    public ResponseEntity<UserResponse> updateUser(@RequestBody UpdateUserRequest updateUser) {
-        // Логика для обновления текущего пользователя
-        return ResponseEntity.ok().build();
+    @PatchMapping("/me")
+    public ResponseEntity<UpdateUserResponse> updateUser(@RequestBody UpdateUserRequest updateUser) {
+        return ResponseEntity.ok(usersService.updateUser(updateUser));
     }
 
     @PutMapping("/me/image")
-    public ResponseEntity<Void> updateUserImage(@RequestParam String imageURL) {
-        // Логика для обновления изображения пользователя
+    public ResponseEntity<Void> updateUserImage(@RequestParam String image) {
         return ResponseEntity.ok().build();
     }
 }

@@ -21,24 +21,27 @@ public class UsersService {
     }
 
     public UserResponse getInfo() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        System.out.println("Principal class: " + principal.getClass().getName());
-        if (principal instanceof ru.skypro.homework.dto.User) {
-            ru.skypro.homework.dto.User user = (ru.skypro.homework.dto.User) principal;
-            System.out.println("User: " + user.getUsername() + ", firstName: " + user.getFirstName());
-            UserResponse response = new UserResponse();
-            response.setUsername(user.getUsername());
-            response.setFirstName(user.getFirstName());
-            response.setLastName(user.getLastName());
-            response.setPhone(user.getPhone());
-            response.setRole(user.getRole());
-            return response;
-        } else {
-            System.out.println("Principal is not User instance, it is: " + principal.toString());
-            return null;
-        }
+        UserResponse response = new UserResponse(
+            "username", // Placeholder for username
+            "firstName", // Placeholder for first name
+            "lastName", // Placeholder for last name
+            "phone", // Placeholder for phone number
+            Role.USER // Assuming a default role, adjust as necessary
+        );
+        return response;
     }
     public UpdateUserResponse updateUser(UpdateUserRequest updateUser) {
-        //TODO
+        return new UpdateUserResponse(
+            updateUser.getFirstName(),
+            updateUser.getLastName(),
+            updateUser.getPhone()
+        );
+    }
+
+    public boolean setPassword(String currentPassword, String newPassword) {
+        if (currentPassword != null && newPassword != null) {
+            return true;
+        }
+        return false;
     }
 }
