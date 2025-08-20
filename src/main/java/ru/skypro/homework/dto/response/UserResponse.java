@@ -4,6 +4,9 @@ import ru.skypro.homework.dto.Role;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import io.swagger.v3.oas.annotations.parameters.ResponseEntity;
+import io.swagger.v3.oas.annotations.Parameter;
+
 @Data
 @NoArgsConstructor
 public class UserResponse {

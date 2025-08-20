@@ -1,6 +1,8 @@
 package ru.skypro.homework.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PutMapping;
 import ru.skypro.homework.service.UsersService;
 import ru.skypro.homework.dto.response.UserResponse;
 import ru.skypro.homework.dto.request.SetPasswordRequest;
@@ -9,6 +11,12 @@ import ru.skypro.homework.dto.response.UpdateUserResponse;
 import ru.skypro.homework.dto.User;
 import lombok.RequiredArgsConstructor;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+
+
+@Tag(name = "Users", description = "Controller for managing user profiles")
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -18,30 +26,30 @@ public class UserController {
         this.usersService = usersService;
     }
 
-    @PostMapping("set_password")
-    public ResponseEntity setPassword(@RequestBody SetPasswordRequest request) {
-        if (usersService.setPassword(request.getCurrentPassword(), request.getNewPassword())) {
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-    @GetMapping("/me")
-    public ResponseEntity<UserResponse> getUser() {
-    UserResponse userResponse = usersService.getInfo();
-    if (userResponse != null) {
-        return ResponseEntity.ok(userResponse);
-    } else {
-        return ResponseEntity.notFound().build();
-    }
-}
-    @PatchMapping("/me")
-    public ResponseEntity<UpdateUserResponse> updateUser(@RequestBody UpdateUserRequest updateUser) {
-        return ResponseEntity.ok(usersService.updateUser(updateUser));
+
+    @Operation(summary = "Set password", description = "Check old password and set new password")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/set_password")
+    public void setPassword(@RequestBody SetPasswordRequest request) {
+        
     }
 
+    @Operation(summary = "Get user information", description = "Retrieves the user's profile information")
+    @GetMapping("/me")
+    public UserResponse getUser() {
+    UserResponse userResponse = usersService.getInfo();
+    return new UserResponse();
+}
+    @Operation(summary = "Update user information", description = "Updates the user's profile information")
+    @PatchMapping("/me")
+    public UpdateUserResponse updateUser(@RequestBody UpdateUserRequest updateUser) {
+        return usersService.updateUser(updateUser);
+    }
+
+    @Operation(summary = "Update user image", description = "Update the user's profile image")
+    @ResponseStatus(HttpStatus.OK)
     @PutMapping("/me/image")
-    public ResponseEntity<Void> updateUserImage(@RequestParam String image) {
-        return ResponseEntity.ok().build();
+    public void updateUserImage(@RequestParam String image) {
+        
     }
 }
