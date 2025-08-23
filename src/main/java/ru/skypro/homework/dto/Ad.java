@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class Ad {
     @Schema(description = "Unique identifier Author", example = "1")
     int author;
-    @Schema(description = "Author's image URL")
+    @Schema(description = "Product image URL")
     String image;
     @Schema(description = "Ad's id", example = "2")
     int pk;
