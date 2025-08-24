@@ -1,18 +1,19 @@
 package ru.skypro.homework.service.impl;
 
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.UserDetailsManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.provisioning.UserDetailsManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.skypro.homework.dto.Register;
 import ru.skypro.homework.repository.UserRepository;
 import ru.skypro.homework.service.AuthService;
-import ru.skypro.homework.entity.UserEntity;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -21,7 +22,6 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder encoder;
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
-
 
     public AuthServiceImpl(UserDetailsManager manager,
                            UserRepository userRepository,
@@ -35,13 +35,13 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public boolean login(String username, String password) {
-        UserEntity user = userRepository.findByUsername(username);
-        if (user == null) {
-            return false;
-        }
-        if (encoder.matches(password, user.getPassword())) {
-            return true;
-        } else {
+        try {
+            UsernamePasswordAuthenticationToken authReq =
+                new UsernamePasswordAuthenticationToken(username, password);
+            Authentication auth = authenticationManager.authenticate(authReq);
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            return auth.isAuthenticated();
+        } catch (AuthenticationException ex) {
             return false;
         }
     }

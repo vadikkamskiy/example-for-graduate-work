@@ -34,13 +34,10 @@ public class AuthController {
     @Operation(summary = "User login", description = "Authenticates a user and returns a token")
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody Login request) {
-    boolean authenticated = authService.login(request.getUsername(), request.getPassword());
-    if (authenticated) {
-        return ResponseEntity.ok("Login successful");
-    } else {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        return authService.login(request.getUsername(), request.getPassword()) ?
+            ResponseEntity.ok("Login successful") :
+            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
     }
-}
 
     @Operation(summary = "User registration", description = "Registers a new user and returns user details")
     @PostMapping("/register")
