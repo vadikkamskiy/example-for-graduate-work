@@ -4,12 +4,14 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 
 @Entity
 @Table(name = "ads")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class AdEntity {
 
     @Id
@@ -27,5 +29,8 @@ public class AdEntity {
 
     @Column(name = "title", nullable = false)
     private String title;
+
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
 }
 

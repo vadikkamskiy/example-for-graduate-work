@@ -17,51 +17,60 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import ru.skypro.homework.service.AdsService;
 import ru.skypro.homework.dto.Ads;
+import ru.skypro.homework.dto.request.CreateOrUpdateAd;
 import ru.skypro.homework.dto.Ad;
 
 @Tag(name = "Ads", description = "Controller for managing advertisements")
 @RestController
 @RequestMapping("/ads")
 public class AdsController {
+    private final AdsService adsService;
+    public AdsController(AdsService adsService) {
+        this.adsService = adsService;
+    }
 
     @Operation(summary = "Get all ads", description = "Retrieves a list of all advertisements")
     @GetMapping
     public Ads getAds() {
-        return new Ads(0, List.of());
+        return adsService.getAllAds();
     }
 
     @Operation(summary = "Create an ad", description = "Creates a new advertisement")
     @PostMapping
-    public Ad createAd(@RequestBody Ad ad, @RequestParam String image) {
-        return ad;
+    public Ad createAd(@AuthenticationPrincipal UserDetails userDetails, @RequestBody CreateOrUpdateAd ad, @RequestParam String image) {
+
+        return adsService.createAd(userDetails.getUsername(),ad, image);
     }
     @Operation(summary = "Get ad by ID", description = "Retrieves an advertisement by its ID")
     @GetMapping("/{id}")
-    public Ad getAd(@PathVariable int id) {
-        return new Ad();
+    public Ad getAd(@PathVariable("id") Long id) {
+        return adsService.getAdById(id);
     }
     @Operation(summary = "Delete ad by ID", description = "Deletes an advertisement by its ID")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteAd(@PathVariable int id) {
-        
+    public void deleteAd(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long id) {
+        adsService.deleteAdById(userDetails.getUsername(), id);
     }
     @Operation(summary = "Update ad by ID", description = "Updates an advertisement by its ID")
     @PatchMapping("/{id}")
-    public Ad updateAd(@PathVariable int id, @RequestBody Ad ad) {
-        return ad;
+    public Ad updateAd(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long id, @RequestBody CreateOrUpdateAd ad) {
+        return adsService.updateAd(userDetails.getUsername(), id, ad);
     }
 
     @Operation(summary = "Get user's ads", description = "Retrieves all advertisements created by the user")
     @GetMapping("/me")
-    public Ads getMyAds() {
-        return new Ads(0, List.of());
+    public Ads getMyAds(@AuthenticationPrincipal UserDetails userDetails) {
+        return adsService.getAdsByUser(userDetails.getUsername());
     }
     @Operation(summary = "Update ads image", description = "Sets a new image for an advertisement")
     @PatchMapping("/{id}/image")
-    public Ad updateAdImage(@PathVariable int id, @RequestBody String image) {
-        return new Ad();
+    public Ad updateAdImage(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long id, @RequestBody String image) {
+        return adsService.updateAdImage(userDetails.getUsername(), id, image);
     }
 }

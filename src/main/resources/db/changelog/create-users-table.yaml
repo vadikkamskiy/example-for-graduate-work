@@ -134,3 +134,19 @@ databaseChangeLog:
             referencedTableName: ads
             referencedColumnNames: pk
             constraintName: fk_comments_ad
+  - changeSet:
+      id: '4'
+      author: vadikkamskiy
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: avatar
+                  type: VARCHAR(255)
+        - addColumn:
+            tableName: ads
+            columns:
+              - column:
+                  name: description
+                  type: VARCHAR(1024)
