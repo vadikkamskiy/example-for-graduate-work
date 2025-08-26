@@ -52,4 +52,10 @@ public class AuthController {
             return null;
         }
     }
+
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.OK)
+    public void logout() {
+        
+    }
 }

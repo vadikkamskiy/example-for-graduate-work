@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import ru.skypro.homework.dto.Register;
 import ru.skypro.homework.repository.UserRepository;
 import ru.skypro.homework.service.AuthService;
+import ru.skypro.homework.entity.UserEntity;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -36,9 +37,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public boolean login(String username, String password) {
         try {
-            UsernamePasswordAuthenticationToken authReq =
-                new UsernamePasswordAuthenticationToken(username, password);
-            Authentication auth = authenticationManager.authenticate(authReq);
+            Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(username, password)
+            );
             SecurityContextHolder.getContext().setAuthentication(auth);
             return auth.isAuthenticated();
         } catch (AuthenticationException ex) {
@@ -48,7 +49,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public boolean register(Register register) {
-        if (manager.userExists(register.getUsername())) {
+    
+        if (userRepository.findByUsername(register.getUsername()).isPresent()) {
             return false;
         }
         UserDetails user = User.builder()
@@ -56,8 +58,8 @@ public class AuthServiceImpl implements AuthService {
                 .password(encoder.encode(register.getPassword()))
                 .roles(register.getRole().name())
                 .build();
-        manager.createUser(user);
-        userRepository.save(new ru.skypro.homework.entity.UserEntity(
+
+        userRepository.save(new UserEntity(
                 null,
                 register.getUsername(),
                 register.getFirstName(),
@@ -66,6 +68,11 @@ public class AuthServiceImpl implements AuthService {
                 encoder.encode(register.getPassword()),
                 register.getRole()
         ));
+        return true;
+    }
+    @Override
+    public boolean logout() {
+        SecurityContextHolder.clearContext();
         return true;
     }
 

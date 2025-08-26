@@ -1,5 +1,7 @@
 package ru.skypro.homework.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,7 +27,7 @@ public class CommentEntity {
     private Long ad;
 
     @Column(name = "created_at", nullable = false)
-    private String createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "text", nullable = false)
     private String text;
