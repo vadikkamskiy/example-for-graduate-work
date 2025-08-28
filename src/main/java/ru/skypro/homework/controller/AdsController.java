@@ -42,9 +42,10 @@ public class AdsController {
 
     @Operation(summary = "Create an ad", description = "Creates a new advertisement")
     @PostMapping
-    public Ad createAd(@AuthenticationPrincipal UserDetails userDetails, @RequestBody CreateOrUpdateAd ad, @RequestParam String image) {
-
-        return adsService.createAd(userDetails.getUsername(),ad, image);
+    public ResponseEntity<String> createAd(@AuthenticationPrincipal UserDetails userDetails, @RequestBody CreateOrUpdateAd ad, @RequestParam String image) {
+        return adsService.createAd(userDetails.getUsername(), ad, image) != null ?
+            ResponseEntity.status(HttpStatus.CREATED).body("Ad created successfully") :
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create ad");
     }
     @Operation(summary = "Get ad by ID", description = "Retrieves an advertisement by its ID")
     @GetMapping("/{id}")
@@ -59,8 +60,10 @@ public class AdsController {
     }
     @Operation(summary = "Update ad by ID", description = "Updates an advertisement by its ID")
     @PatchMapping("/{id}")
-    public Ad updateAd(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long id, @RequestBody CreateOrUpdateAd ad) {
-        return adsService.updateAd(userDetails.getUsername(), id, ad);
+    public ResponseEntity<String> updateAd(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long id, @RequestBody CreateOrUpdateAd ad) {
+        return adsService.updateAdById(userDetails.getUsername(), id, ad) != null ?
+            ResponseEntity.status(HttpStatus.OK).body("Ad updated successfully") :
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to update ad");
     }
 
     @Operation(summary = "Get user's ads", description = "Retrieves all advertisements created by the user")
@@ -70,7 +73,9 @@ public class AdsController {
     }
     @Operation(summary = "Update ads image", description = "Sets a new image for an advertisement")
     @PatchMapping("/{id}/image")
-    public Ad updateAdImage(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long id, @RequestBody String image) {
-        return adsService.updateAdImage(userDetails.getUsername(), id, image);
+    public ResponseEntity<String> updateAdImage(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long id, @RequestBody String image) {
+        return adsService.updateAdImageById(userDetails.getUsername(), id, image) != null ?
+            ResponseEntity.status(HttpStatus.OK).body("Ad image updated successfully") :
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to update ad image");
     }
 }

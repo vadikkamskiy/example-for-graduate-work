@@ -33,29 +33,32 @@ public class AuthController {
 
     @Operation(summary = "User login", description = "Authenticates a user and returns a token")
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody Login request) {
-        return authService.login(request.getUsername(), request.getPassword()) ?
-            ResponseEntity.ok("Login successful") :
-            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+    @ResponseStatus(HttpStatus.OK)
+    public void login(@RequestBody Login request) {
+        try {
+            authService.login(request);
+        } catch (Exception e) {
+            log.error("Login failed for user: {}", request.getUsername(), e);
+            throw new RuntimeException("Login failed");
+        }
     }
 
     @Operation(summary = "User registration", description = "Registers a new user and returns user details")
     @PostMapping("/register")
-    public UserResponse register(@RequestBody Register register) {
-        if (authService.register(register)) {
-            return new UserResponse(register.getUsername(),
-                    register.getFirstName(),
-                    register.getLastName(),
-                    register.getPhone(),
-                    register.getRole());
-        } else {
-            return null;
+    @ResponseStatus(HttpStatus.CREATED)
+    public void register(@RequestBody Register register) {
+        try {
+            authService.register(register);
+        } catch (Exception e) {
+            log.error("Registration failed for user: {}", register.getUsername(), e);
+            throw new RuntimeException("Registration failed");
         }
     }
 
+    @Operation(summary = "User logout", description = "Logs out the user")
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.OK)
     public void logout() {
-        
+        //TODO
     }
 }

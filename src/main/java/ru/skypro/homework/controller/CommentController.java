@@ -31,7 +31,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 public class CommentController {
     private final CommentService commentService;
 
-
     public CommentController(CommentService commentService) {
         this.commentService = commentService;
     }
