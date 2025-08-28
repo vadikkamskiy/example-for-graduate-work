@@ -35,24 +35,14 @@ public class AuthController {
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
     public void login(@RequestBody Login request) {
-        try {
-            authService.login(request);
-        } catch (Exception e) {
-            log.error("Login failed for user: {}", request.getUsername(), e);
-            throw new RuntimeException("Login failed");
-        }
+        authService.login(request.getUsername(), request.getPassword());
     }
 
     @Operation(summary = "User registration", description = "Registers a new user and returns user details")
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public void register(@RequestBody Register register) {
-        try {
-            authService.register(register);
-        } catch (Exception e) {
-            log.error("Registration failed for user: {}", register.getUsername(), e);
-            throw new RuntimeException("Registration failed");
-        }
+        authService.register(register);
     }
 
     @Operation(summary = "User logout", description = "Logs out the user")

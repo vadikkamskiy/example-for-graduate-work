@@ -37,38 +37,33 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public boolean login(String username, String password) {
         try {
-            Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(username, password)
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, password)
             );
-            SecurityContextHolder.getContext().setAuthentication(auth);
-            return auth.isAuthenticated();
-        } catch (AuthenticationException ex) {
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            return authentication.isAuthenticated();
+        } catch (AuthenticationException e) {
             return false;
         }
     }
 
     @Override
-    public boolean register(Register register) {
-    
-        if (userRepository.findByUsername(register.getUsername()).isPresent()) {
+    public boolean register(Register register){
+        try {
+            if (userRepository.findByUsername(register.getUsername()).isPresent()) {
+                return false; // User already exists
+            }
+            UserEntity userEntity = new UserEntity();
+            userEntity.setUsername(register.getUsername());
+            userEntity.setFirstName(register.getFirstName());
+            userEntity.setLastName(register.getLastName());
+            userEntity.setPhone(register.getPhone());
+            userEntity.setPassword(encoder.encode(register.getPassword()));
+            userRepository.save(userEntity);
+            return true;
+        } catch (AuthenticationException e) {
             return false;
         }
-        UserDetails user = User.builder()
-                .username(register.getUsername())
-                .password(encoder.encode(register.getPassword()))
-                .roles(register.getRole().name())
-                .build();
-
-        userRepository.save(new UserEntity(
-                null,
-                register.getUsername(),
-                register.getFirstName(),
-                register.getLastName(),
-                register.getPhone(),
-                encoder.encode(register.getPassword()),
-                register.getRole()
-        ));
-        return true;
     }
     @Override
     public boolean logout() {

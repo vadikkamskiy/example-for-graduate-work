@@ -42,10 +42,10 @@ public class AdsService {
         UserEntity userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         AdEntity adEntity = new AdEntity();
-        adEntity.setAuthor(userEntity.getPk());
         adEntity.setTitle(ad.getTitle());
         adEntity.setDescription(ad.getDescription());
         adEntity.setPrice(ad.getPrice());
+        adEntity.setAuthor(userEntity.getPk());
         adEntity.setImage(image);
         AdEntity savedAd = adsRepository.save(adEntity);
         return adMapper.toDto(savedAd);
