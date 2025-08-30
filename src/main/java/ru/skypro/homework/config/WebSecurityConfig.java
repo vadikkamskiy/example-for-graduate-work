@@ -10,33 +10,53 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.context.annotation.Profile;
 
-import ru.skypro.homework.dto.Role;
 
 @Configuration
 public class WebSecurityConfig {
 
     private static final String[] AUTH_WHITELIST = {
-            "/swagger-resources/**",
-            "/swagger-ui.html",
-            "/v3/api-docs/**",
-            "/webjars/**",
-            "/login",
-            "/register"
+        "/swagger-resources/**",
+        "/swagger-ui.html",
+        "/v3/api-docs/**",
+        "/webjars/**",
+        "/login",
+        "/register"
     };
 
     @Bean
-    public InMemoryUserDetailsManager userDetailsService(PasswordEncoder passwordEncoder) {
+    @Profile("test")
+    public InMemoryUserDetailsManager inMemoryUserDetailsManager(PasswordEncoder passwordEncoder) {
         UserDetails user = User.builder()
                 .username("user@gmail.com")
                 .password(passwordEncoder.encode("password"))
-                .roles(Role.USER.name())
+                .roles("USER")
                 .build();
         return new InMemoryUserDetailsManager(user);
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
+                                                            PasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
+        return provider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(DaoAuthenticationProvider provider) {
+        return new org.springframework.security.authentication.ProviderManager(provider);
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           DaoAuthenticationProvider provider) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
@@ -45,7 +65,9 @@ public class WebSecurityConfig {
                     .anyRequest().denyAll()
             )
             .httpBasic(Customizer.withDefaults())
-            .cors(cors -> {});
+            .cors(cors -> {})
+            .authenticationProvider(provider);
+
         return http.build();
     }
 

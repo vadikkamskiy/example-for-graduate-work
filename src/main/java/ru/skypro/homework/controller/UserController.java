@@ -9,6 +9,8 @@ import ru.skypro.homework.dto.request.SetPasswordRequest;
 import ru.skypro.homework.dto.request.UpdateUserRequest;
 import ru.skypro.homework.dto.response.UpdateUserResponse;
 import ru.skypro.homework.dto.User;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import lombok.RequiredArgsConstructor;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,20 +32,21 @@ public class UserController {
     @Operation(summary = "Set password", description = "Check old password and set new password")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/set_password")
-    public void setPassword(@RequestBody SetPasswordRequest request) {
-        
+    public void setPassword(@AuthenticationPrincipal UserDetails userDetails,
+                             @RequestBody SetPasswordRequest request) {
+        usersService.setPassword(userDetails.getUsername(), request.getCurrentPassword(), request.getNewPassword());
     }
 
     @Operation(summary = "Get user information", description = "Retrieves the user's profile information")
     @GetMapping("/me")
-    public UserResponse getUser() {
-    UserResponse userResponse = usersService.getInfo();
-    return new UserResponse();
-}
+    public UserResponse getUser(@AuthenticationPrincipal UserDetails userDetails) {
+        return usersService.getInfo(userDetails.getUsername());
+    }
     @Operation(summary = "Update user information", description = "Updates the user's profile information")
     @PatchMapping("/me")
-    public UpdateUserResponse updateUser(@RequestBody UpdateUserRequest updateUser) {
-        return usersService.updateUser(updateUser);
+    public UserResponse updateUser(@AuthenticationPrincipal UserDetails userDetails,
+                                    @RequestBody UpdateUserRequest updateUser) {
+        return usersService.updateUser(userDetails.getUsername(), updateUser);
     }
 
     @Operation(summary = "Update user image", description = "Update the user's profile image")

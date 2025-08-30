@@ -1,10 +1,12 @@
 package ru.skypro.homework.dto;
 
 import lombok.Data;
+import lombok.AllArgsConstructor;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "DTO for user login")
 @Data
+@AllArgsConstructor
 public class Login {
 
     @Schema(description = "Username of the user", example = "john_doe")

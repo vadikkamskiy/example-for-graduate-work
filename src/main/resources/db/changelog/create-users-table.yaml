@@ -52,3 +52,101 @@ databaseChangeLog:
                   defaultValue: 'USER'
                   constraints:
                     nullable: false
+  - changeSet:
+      id: '2'
+      author: vadikkamskiy
+      changes:
+        - createTable: 
+            tableName: ads
+            columns:
+              - column:
+                  name: pk
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: author
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: image
+                  type: VARCHAR(255)
+              - column:
+                  name: price
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: title
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: ads
+            baseColumnNames: author
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_ads_author
+  - changeSet:
+      id: '3'
+      author: vadikkamskiy
+      changes:
+        - createTable:
+            tableName: comments
+            columns:
+              - column:
+                  name: pk
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: author
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: author_avatar
+                  type: VARCHAR(255) 
+              - column:
+                  name: ad
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: text
+                  type: VARCHAR(512)
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: comments
+            baseColumnNames: author
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_comments_author
+        - addForeignKeyConstraint:
+            baseTableName: comments
+            baseColumnNames: ad
+            referencedTableName: ads
+            referencedColumnNames: pk
+            constraintName: fk_comments_ad
+  - changeSet:
+      id: '4'
+      author: vadikkamskiy
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: avatar
+                  type: VARCHAR(255)
+        - addColumn:
+            tableName: ads
+            columns:
+              - column:
+                  name: description
+                  type: VARCHAR(1024)
