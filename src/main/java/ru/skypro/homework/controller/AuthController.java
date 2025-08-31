@@ -35,20 +35,20 @@ public class AuthController {
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
     public void login(@RequestBody Login request) {
-        //authService.login(request.getUsername(), request.getPassword());
+        authService.login(request.getUsername(), request.getPassword());
     }
 
     @Operation(summary = "User registration", description = "Registers a new user and returns user details")
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public void register(@RequestBody Register register) {
-        //authService.register(register);
+        authService.register(register);
     }
 
     @Operation(summary = "User logout", description = "Logs out the user")
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.OK)
     public void logout() {
-        //TODO
+        authService.logout();
     }
 }

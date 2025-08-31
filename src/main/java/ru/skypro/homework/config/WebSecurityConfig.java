@@ -29,19 +29,19 @@ public class WebSecurityConfig {
         "/register"
     };
 
-    // @Bean
-    // public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
-    //                                                         PasswordEncoder passwordEncoder) {
-    //     DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-    //     provider.setUserDetailsService(userDetailsService);
-    //     provider.setPasswordEncoder(passwordEncoder);
-    //     return provider;
-    // }
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
+                                                            PasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
+        return provider;
+    }
 
-    // @Bean
-    // public AuthenticationManager authenticationManager(DaoAuthenticationProvider provider) {
-    //     return new org.springframework.security.authentication.ProviderManager(provider);
-    // }
+    @Bean
+    public AuthenticationManager authenticationManager(DaoAuthenticationProvider provider) {
+        return new org.springframework.security.authentication.ProviderManager(provider);
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
@@ -49,6 +49,8 @@ public class WebSecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/users/**").hasRole("USER")
+                    .requestMatchers("/ads/**").hasAnyRole("USER", "ADMIN")
                     .requestMatchers(AUTH_WHITELIST).permitAll()
                     .requestMatchers("/ads/**", "/users/**").authenticated()
                     .anyRequest().denyAll()
