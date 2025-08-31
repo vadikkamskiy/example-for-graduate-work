@@ -29,30 +29,19 @@ public class WebSecurityConfig {
         "/register"
     };
 
-    @Bean
-    @Profile("test")
-    public InMemoryUserDetailsManager inMemoryUserDetailsManager(PasswordEncoder passwordEncoder) {
-        UserDetails user = User.builder()
-                .username("user@gmail.com")
-                .password(passwordEncoder.encode("password"))
-                .roles("USER")
-                .build();
-        return new InMemoryUserDetailsManager(user);
-    }
+    // @Bean
+    // public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
+    //                                                         PasswordEncoder passwordEncoder) {
+    //     DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+    //     provider.setUserDetailsService(userDetailsService);
+    //     provider.setPasswordEncoder(passwordEncoder);
+    //     return provider;
+    // }
 
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
-                                                            PasswordEncoder passwordEncoder) {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
-        provider.setPasswordEncoder(passwordEncoder);
-        return provider;
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(DaoAuthenticationProvider provider) {
-        return new org.springframework.security.authentication.ProviderManager(provider);
-    }
+    // @Bean
+    // public AuthenticationManager authenticationManager(DaoAuthenticationProvider provider) {
+    //     return new org.springframework.security.authentication.ProviderManager(provider);
+    // }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,

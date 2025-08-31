@@ -36,39 +36,39 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public boolean login(String username, String password) {
-        try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, password)
-            );
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            return authentication.isAuthenticated();
-        } catch (AuthenticationException e) {
-            return false;
-        }
+        // try {
+        //     Authentication authentication = authenticationManager.authenticate(
+        //             new UsernamePasswordAuthenticationToken(username, password)
+        //     );
+        //     SecurityContextHolder.getContext().setAuthentication(authentication);
+        //     return authentication.isAuthenticated();
+        // } catch (AuthenticationException e) {
+        //     return false;
+        // }
     }
 
     @Override
     public boolean register(Register register){
-        try {
-            if (userRepository.findByUsername(register.getUsername()).isPresent()) {
-                return false; // User already exists
-            }
-            UserEntity userEntity = new UserEntity();
-            userEntity.setUsername(register.getUsername());
-            userEntity.setFirstName(register.getFirstName());
-            userEntity.setLastName(register.getLastName());
-            userEntity.setPhone(register.getPhone());
-            userEntity.setPassword(encoder.encode(register.getPassword()));
-            userRepository.save(userEntity);
-            return true;
-        } catch (AuthenticationException e) {
-            return false;
-        }
+        // try {
+        //     if (userRepository.findByUsername(register.getUsername()).isPresent()) {
+        //         return false; // User already exists
+        //     }
+        //     UserEntity userEntity = new UserEntity();
+        //     userEntity.setUsername(register.getUsername());
+        //     userEntity.setFirstName(register.getFirstName());
+        //     userEntity.setLastName(register.getLastName());
+        //     userEntity.setPhone(register.getPhone());
+        //     userEntity.setPassword(encoder.encode(register.getPassword()));
+        //     userRepository.save(userEntity);
+        //     return true;
+        // } catch (AuthenticationException e) {
+        //     return false;
+        // }
     }
     @Override
     public boolean logout() {
-        SecurityContextHolder.clearContext();
-        return true;
+        // SecurityContextHolder.clearContext();
+        // return true;
     }
 
 }
