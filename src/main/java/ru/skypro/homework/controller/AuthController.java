@@ -49,6 +49,6 @@ public class AuthController {
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.OK)
     public void logout() {
-        //TODO
+        authService.logout();
     }
 }

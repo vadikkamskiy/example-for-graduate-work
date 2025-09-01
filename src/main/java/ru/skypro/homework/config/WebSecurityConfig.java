@@ -30,17 +30,6 @@ public class WebSecurityConfig {
     };
 
     @Bean
-    @Profile("test")
-    public InMemoryUserDetailsManager inMemoryUserDetailsManager(PasswordEncoder passwordEncoder) {
-        UserDetails user = User.builder()
-                .username("user@gmail.com")
-                .password(passwordEncoder.encode("password"))
-                .roles("USER")
-                .build();
-        return new InMemoryUserDetailsManager(user);
-    }
-
-    @Bean
     public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
                                                             PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -60,6 +49,8 @@ public class WebSecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/users/**").hasRole("USER")
+                    .requestMatchers("/ads/**").hasAnyRole("USER", "ADMIN")
                     .requestMatchers(AUTH_WHITELIST).permitAll()
                     .requestMatchers("/ads/**", "/users/**").authenticated()
                     .anyRequest().denyAll()
