@@ -24,6 +24,7 @@ public class User{
     @Schema(description = "User's role", example = "USER")
     private Role role;
     @Schema(description = "User's image", example = "http://fuck.off")
+    
     private String image;
 
 }

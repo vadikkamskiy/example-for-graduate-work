@@ -35,4 +35,7 @@ public class UserEntity {
 
     @Column(name = "role", nullable = false)
     private Role role;
+
+    @Column(name = "avatar_data")
+    private byte[] image;
 }

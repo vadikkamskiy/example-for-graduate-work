@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: '1'
+      id: '1-create-users'
       author: vadikkamskiy
       changes:
         - createTable:
@@ -13,50 +13,55 @@ databaseChangeLog:
                   constraints:
                     primaryKey: true
                     nullable: false
-
               - column:
                   name: username
                   type: VARCHAR(32)
                   constraints:
                     nullable: false
                     unique: true
-
-              - column:
-                  name: password
-                  type: VARCHAR(16)
-                  constraints:
-                    nullable: false
-
               - column:
                   name: first_name
-                  type: VARCHAR(16)
+                  type: VARCHAR(64)
                   constraints:
                     nullable: false
-
               - column:
                   name: last_name
-                  type: VARCHAR(16)
+                  type: VARCHAR(64)
                   constraints:
                     nullable: false
-
+              - column:
+                  name: password
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                  remarks: "Храним хеш пароля (BCrypt/Argon2), не plain text"
               - column:
                   name: phone
                   type: VARCHAR(20)
                   constraints:
                     nullable: false
                     unique: true
-
               - column:
                   name: role
-                  type: VARCHAR(16)
+                  type: VARCHAR(32)
                   defaultValue: 'USER'
                   constraints:
                     nullable: false
+                  remarks: "В коде — enum; в БД — строка"
+              - column:
+                  name: avatar_data
+                  type: BYTEA
+                  remarks: "Храним бинарник аватара прямо в БД (для прототипа). Для прод — рекомендовано S3/MinIO."
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+
   - changeSet:
-      id: '2'
+      id: '2-create-ads'
       author: vadikkamskiy
       changes:
-        - createTable: 
+        - createTable:
             tableName: ads
             columns:
               - column:
@@ -72,9 +77,6 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: image
-                  type: VARCHAR(255)
-              - column:
                   name: price
                   type: INT
                   constraints:
@@ -84,14 +86,105 @@ databaseChangeLog:
                   type: VARCHAR(255)
                   constraints:
                     nullable: false
+              - column:
+                  name: description
+                  type: VARCHAR(2048)
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
         - addForeignKeyConstraint:
             baseTableName: ads
             baseColumnNames: author
             referencedTableName: users
             referencedColumnNames: id
             constraintName: fk_ads_author
+            onDelete: RESTRICT
+        - createIndex:
+            tableName: ads
+            indexName: idx_ads_author
+            columns:
+              - column:
+                  name: author
+        - createIndex:
+            tableName: ads
+            indexName: idx_ads_price
+            columns:
+              - column:
+                  name: price
+
   - changeSet:
-      id: '3'
+      id: '3-create-ad_images'
+      author: vadikkamskiy
+      changes:
+        - createTable:
+            tableName: ad_images
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: ad_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: storage_key
+                  type: VARCHAR(1024)
+                  remarks: "ключ/идентификатор в объектном хранилище или локальный путь; nullable если используем url"
+              - column:
+                  name: url
+                  type: VARCHAR(2048)
+                  remarks: "опционально — CDN/прямой URL"
+              - column:
+                  name: content_type
+                  type: VARCHAR(100)
+              - column:
+                  name: size
+                  type: BIGINT
+              - column:
+                  name: position
+                  type: INT
+              - column:
+                  name: is_primary
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+        - addForeignKeyConstraint:
+            baseTableName: ad_images
+            baseColumnNames: ad_id
+            referencedTableName: ads
+            referencedColumnNames: pk
+            constraintName: fk_ad_images_ad
+            onDelete: CASCADE
+        - createIndex:
+            tableName: ad_images
+            indexName: idx_ad_images_ad
+            columns:
+              - column:
+                  name: ad_id
+        - createIndex:
+            tableName: ad_images
+            indexName: idx_ad_images_ad_pos
+            columns:
+              - column:
+                  name: ad_id
+              - column:
+                  name: position
+
+  - changeSet:
+      id: '4-create-comments'
       author: vadikkamskiy
       changes:
         - createTable:
@@ -110,43 +203,113 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: author_avatar
-                  type: VARCHAR(255) 
-              - column:
                   name: ad
                   type: BIGINT
                   constraints:
                     nullable: false
               - column:
                   name: text
-                  type: VARCHAR(512)
+                  type: VARCHAR(1024)
                   constraints:
                     nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
         - addForeignKeyConstraint:
             baseTableName: comments
             baseColumnNames: author
             referencedTableName: users
             referencedColumnNames: id
             constraintName: fk_comments_author
+            onDelete: RESTRICT
         - addForeignKeyConstraint:
             baseTableName: comments
             baseColumnNames: ad
             referencedTableName: ads
             referencedColumnNames: pk
             constraintName: fk_comments_ad
+            onDelete: CASCADE
+        - createIndex:
+            tableName: comments
+            indexName: idx_comments_ad
+            columns:
+              - column:
+                  name: ad
+        - createIndex:
+            tableName: comments
+            indexName: idx_comments_author
+            columns:
+              - column:
+                  name: author
+
+  # --- Опциональные changeSet'ы для миграции существующих данных ---
   - changeSet:
-      id: '4'
+      id: '5-migrate-ads-image-to-ad_images'
       author: vadikkamskiy
       changes:
-        - addColumn:
-            tableName: users
-            columns:
-              - column:
-                  name: avatar
-                  type: VARCHAR(255)
-        - addColumn:
+        - preConditions:
+            onFail: CONTINUE
+            preConditions:
+              - columnExists:
+                  tableName: ads
+                  columnName: image
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: >
+              -- Переносим значения из ads.image (если там были URL/ключи) в ad_images.
+              INSERT INTO ad_images (ad_id, storage_key, url, created_at)
+              SELECT pk AS ad_id, image AS storage_key, image AS url, CURRENT_TIMESTAMP
+              FROM ads
+              WHERE image IS NOT NULL AND image <> '';
+
+  - changeSet:
+      id: '6-drop-ads-image-column'
+      author: vadikkamskiy
+      changes:
+        - preConditions:
+            onFail: MARK_RAN
+            preConditions:
+              - columnExists:
+                  tableName: ads
+                  columnName: image
+        - dropColumn:
+            columnName: image
             tableName: ads
-            columns:
-              - column:
-                  name: description
-                  type: VARCHAR(1024)
+
+  - changeSet:
+      id: '7-drop-comments-author_avatar-if-exists'
+      author: vadikkamskiy
+      changes:
+        - preConditions:
+            onFail: MARK_RAN
+            preConditions:
+              - columnExists:
+                  tableName: comments
+                  columnName: author_avatar
+        - dropColumn:
+            columnName: author_avatar
+            tableName: comments
+        - preConditions:
+            onFail: MARK_RAN
+            preConditions:
+              - columnExists:
+                  tableName: comments
+                  columnName: author_avatar_content_type
+        - dropColumn:
+            columnName: author_avatar_content_type
+            tableName: comments
+        - preConditions:
+            onFail: MARK_RAN
+            preConditions:
+              - columnExists:
+                  tableName: comments
+                  columnName: author_avatar_size
+        - dropColumn:
+            columnName: author_avatar_size
+            tableName: comments
