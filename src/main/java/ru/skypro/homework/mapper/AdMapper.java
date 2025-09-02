@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.skypro.homework.dto.Ad;
 import ru.skypro.homework.entity.AdEntity;
 import ru.skypro.homework.entity.UserEntity;
+import ru.skypro.homework.entity.AdImageEntity;
 
 @Component
 public class AdMapper {
@@ -11,7 +12,7 @@ public class AdMapper {
     public Ad toDto(AdEntity entity) {
         return new Ad(
                 entity.getAuthor(),
-                "image url",
+                entity.getImage(),
                 entity.getPk(),
                 entity.getPrice(),
                 entity.getTitle(),
@@ -19,11 +20,23 @@ public class AdMapper {
                 
         );
     }
+    public static Ad toDto(AdEntity e, AdImageEntity image) {
+        Ad dto = new Ad();
+        dto.setPk(e.getPk());
+        dto.setTitle(e.getTitle());
+        dto.setPrice(e.getPrice());
+        dto.setDescription(e.getDescription());
+
+        dto.setAuthor(e.getAuthor());
+        dto.setImage(image);
+
+        return dto;
+    }
 
     public AdEntity toEntity(Ad dto, UserEntity user) {
         return AdEntity.builder()
                 .author(user.getPk())
-                .image("image url")
+                .image(dto.getImage())
                 .price(dto.getPrice())
                 .title(dto.getTitle())
                 .description(dto.getDescription())

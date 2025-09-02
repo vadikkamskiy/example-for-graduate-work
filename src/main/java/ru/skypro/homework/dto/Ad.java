@@ -2,7 +2,7 @@ package ru.skypro.homework.dto;
 import lombok.Data;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-
+import ru.skypro.homework.entity.AdImageEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "Ad entity representing an advertisement in the system")
@@ -12,8 +12,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class Ad {
     @Schema(description = "Unique identifier Author", example = "1")
     Long author;
-    @Schema(description = "Product image URL")
-    String image;
+    @Schema(description = "Product image")
+    AdImageEntity image;
     @Schema(description = "Ad's id", example = "2")
     Long pk;
     @Schema(description = "Price of product", example = "200")

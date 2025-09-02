@@ -5,10 +5,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import java.util.List;
+import java.io.IOException;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.multipart.MultipartFile;
 
 import ru.skypro.homework.service.AdsService;
 import ru.skypro.homework.dto.Ads;
@@ -30,6 +33,7 @@ import ru.skypro.homework.dto.Ad;
 @RequestMapping("/ads")
 public class AdsController {
     private final AdsService adsService;
+
     public AdsController(AdsService adsService) {
         this.adsService = adsService;
     }
@@ -44,8 +48,14 @@ public class AdsController {
     @Operation(summary = "Create an ad", description = "Creates a new advertisement")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Ad createAd(@AuthenticationPrincipal UserDetails userDetails, @RequestBody CreateOrUpdateAd ad, @RequestParam String image) {
-        return adsService.createAd(userDetails.getUsername(), ad, image);
+    public Ad createAd(@AuthenticationPrincipal UserDetails userDetails,
+                   @RequestPart("ad") CreateOrUpdateAd ad,
+                   @RequestPart("file") MultipartFile file) {
+        try{
+            return adsService.createAd(userDetails.getUsername(), ad, file);
+        }catch (IOException e) {
+            throw new RuntimeException("Failed to read uploaded file", e);
+        }   
     }
     @Operation(summary = "Get ad by ID", description = "Retrieves an advertisement by its ID")
     @GetMapping("/{id}")
@@ -73,7 +83,11 @@ public class AdsController {
     @Operation(summary = "Update ads image", description = "Sets a new image for an advertisement")
     @PatchMapping("/{id}/image")
     @ResponseStatus(HttpStatus.OK)
-    public Ad updateAdImage(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long id, @RequestBody String image) {
-        return adsService.updateAdImage(userDetails.getUsername(), id, image);
+    public Ad updateAdImage(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        try {
+            return adsService.updateAdImage(userDetails.getUsername(), id, file);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read uploaded file", e);
+        }    
     }
 }
