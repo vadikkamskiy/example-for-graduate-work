@@ -20,8 +20,8 @@ public class CommentEntity {
     @Column(name = "author", nullable = false)
     private Long author;
 
-    @Column(name = "author_avatar")
-    private String authorAvatar;
+    @Column(name = "author_avatar", columnDefinition = "BYTEA")
+    private byte[] authorAvatar;
 
     @Column(name = "ad", nullable = false)
     private Long ad;
