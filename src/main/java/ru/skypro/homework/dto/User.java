@@ -3,6 +3,9 @@ package ru.skypro.homework.dto;
 import lombok.Data;
 import lombok.AllArgsConstructor;
 import ru.skypro.homework.dto.Role;
+
+import java.io.File;
+
 import org.springframework.security.core.userdetails.UserDetails;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -24,7 +27,7 @@ public class User{
     @Schema(description = "User's role", example = "USER")
     private Role role;
     @Schema(description = "User's image", example = "http://fuck.off")
-    
-    private String image;
+    private byte[] image;
 
+    
 }

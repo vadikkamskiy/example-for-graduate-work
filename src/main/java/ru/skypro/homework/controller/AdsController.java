@@ -51,8 +51,8 @@ public class AdsController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Ad createAd(@AuthenticationPrincipal UserDetails userDetails,
-                   @RequestPart("properties") CreateOrUpdateAd ad,
-                   @RequestPart("image") MultipartFile image) {
+                        @RequestPart("properties") CreateOrUpdateAd ad,
+                        @RequestPart("image") MultipartFile image) {
         try{
             return adsService.createAd(userDetails.getUsername(), ad, image);
         }catch (IOException e) {

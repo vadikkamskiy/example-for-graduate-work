@@ -21,9 +21,8 @@ public class AdImageEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ad_id", nullable = false, foreignKey = @ForeignKey(name = "fk_ad_images_ad"))
-    @JsonIgnore
+    @OneToOne
+    @JoinColumn(name = "ad_id", nullable = false, unique = true)    @JsonIgnore
     private AdEntity ad;
 
     @Column(name = "storage_key", length = 1024)

@@ -12,8 +12,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class Ad {
     @Schema(description = "Unique identifier Author", example = "1")
     Long author;
-    @Schema(description = "Product image")
-    AdImageEntity image;
+    @Schema(description = "Ad's image")
+    AdImageEntity imageEntity;
+    @Schema(description = "Ad's image url")
+    String image;
     @Schema(description = "Ad's id", example = "2")
     Long pk;
     @Schema(description = "Price of product", example = "200")

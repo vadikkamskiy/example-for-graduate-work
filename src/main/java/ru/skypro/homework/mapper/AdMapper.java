@@ -13,6 +13,7 @@ public class AdMapper {
         return new Ad(
                 entity.getAuthor(),
                 entity.getImage(),
+                null,
                 entity.getPk(),
                 entity.getPrice(),
                 entity.getTitle(),
@@ -26,9 +27,9 @@ public class AdMapper {
         dto.setTitle(e.getTitle());
         dto.setPrice(e.getPrice());
         dto.setDescription(e.getDescription());
-
         dto.setAuthor(e.getAuthor());
-        dto.setImage(image);
+        dto.setImageEntity(image);
+        dto.setImage(image.getUrl());
 
         return dto;
     }
@@ -36,7 +37,7 @@ public class AdMapper {
     public AdEntity toEntity(Ad dto, UserEntity user) {
         return AdEntity.builder()
                 .author(user.getPk())
-                .image(dto.getImage())
+                .image(dto.getImageEntity())
                 .price(dto.getPrice())
                 .title(dto.getTitle())
                 .description(dto.getDescription())

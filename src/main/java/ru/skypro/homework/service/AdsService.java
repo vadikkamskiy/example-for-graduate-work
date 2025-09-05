@@ -51,7 +51,7 @@ public class AdsService {
     public Ad createAd(String username, CreateOrUpdateAd adDto, MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("File must be provided");
-        }
+        }   
 
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -64,19 +64,19 @@ public class AdsService {
         AdEntity savedAd = adsRepository.save(ad);
 
         String storageKey = saveFileLocally(file);
-        String url = "/uploads/" + storageKey;
+        String url = "/src/images/" + storageKey;
 
         AdImageEntity image = new AdImageEntity();
         image.setAd(savedAd);
         image.setStorageKey(storageKey);
         image.setUrl(url);
-        // image.setContentType(file.getContentType());
+        image.setContentType(file.getContentType());
         image.setSize(file.getSize());
         image.setPosition(0);
         image.setIsPrimary(true);
         adImageRepository.save(image);
-
         savedAd.setImage(image);
+        savedAd = adsRepository.save(savedAd);
 
         return adMapper.toDto(savedAd);
     }
