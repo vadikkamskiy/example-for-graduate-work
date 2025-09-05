@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import ru.skypro.homework.service.AdsService;
 import ru.skypro.homework.dto.Ads;
@@ -31,6 +32,7 @@ import ru.skypro.homework.dto.Ad;
 @Tag(name = "Ads", description = "Controller for managing advertisements")
 @RestController
 @RequestMapping("/ads")
+@CrossOrigin(origins = "*")
 public class AdsController {
     private final AdsService adsService;
 
@@ -49,10 +51,10 @@ public class AdsController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Ad createAd(@AuthenticationPrincipal UserDetails userDetails,
-                   @RequestPart("ad") CreateOrUpdateAd ad,
-                   @RequestPart("file") MultipartFile file) {
+                   @RequestPart("properties") CreateOrUpdateAd ad,
+                   @RequestPart("image") MultipartFile image) {
         try{
-            return adsService.createAd(userDetails.getUsername(), ad, file);
+            return adsService.createAd(userDetails.getUsername(), ad, image);
         }catch (IOException e) {
             throw new RuntimeException("Failed to read uploaded file", e);
         }   
