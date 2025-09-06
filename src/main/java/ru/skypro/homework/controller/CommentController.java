@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,6 +28,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 
 @Tag(name = "Comments", description = "Controller for managing comments on advertisements")
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/ads")
 public class CommentController {
     private final CommentService commentService;

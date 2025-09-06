@@ -3,6 +3,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.service.UsersService;
 import ru.skypro.homework.dto.response.UserResponse;
 import ru.skypro.homework.dto.request.SetPasswordRequest;
@@ -13,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import lombok.RequiredArgsConstructor;
 
+
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,6 +22,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 
 @Tag(name = "Users", description = "Controller for managing user profiles")
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/users")
 public class UserController {
     private final UsersService usersService;
@@ -51,8 +54,9 @@ public class UserController {
 
     @Operation(summary = "Update user image", description = "Update the user's profile image")
     @ResponseStatus(HttpStatus.OK)
-    @PutMapping("/me/image")
-    public void updateUserImage(@RequestParam String image) {
-        
+    @PatchMapping("/me/image")
+    public void updateUserImage(@AuthenticationPrincipal UserDetails userDetails,
+                                @RequestParam("image") MultipartFile image) {
+        usersService.updateUserImage(userDetails.getUsername(), image);
     }
 }

@@ -41,3 +41,6 @@ gradlew.bat
 settings.gradle
 
 .env
+
+/uploads
+/src/images

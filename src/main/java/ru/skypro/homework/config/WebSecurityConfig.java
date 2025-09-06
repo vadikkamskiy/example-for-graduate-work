@@ -49,7 +49,7 @@ public class WebSecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/users/**").hasRole("USER")
+
                     .requestMatchers("/ads/**").hasAnyRole("USER", "ADMIN")
                     .requestMatchers(AUTH_WHITELIST).permitAll()
                     .requestMatchers("/ads/**", "/users/**").authenticated()

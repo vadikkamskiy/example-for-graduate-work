@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import java.io.IOException;
+import org.springframework.web.multipart.MultipartFile;
 
 import ru.skypro.homework.dto.response.UserResponse;
 import ru.skypro.homework.repository.UserRepository;
@@ -39,7 +41,8 @@ public class UsersService {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getPhone(),
-                user.getRole()
+                user.getRole(),
+                user.getImage()
         );
     }
     public UserResponse updateUser(String username, UpdateUserRequest updateUser) {
@@ -62,7 +65,8 @@ public class UsersService {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getPhone(),
-                user.getRole()
+                user.getRole(),
+                user.getImage()
         );
     }
 
@@ -81,6 +85,16 @@ public class UsersService {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         return true;
+    }
+    public void updateUserImage(String username, MultipartFile image) {
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+        try {
+            user.setImage(image.getBytes());
+            userRepository.save(user);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to update user image", e);
+        }
     }
 
 }

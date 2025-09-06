@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import ru.skypro.homework.entity.AdImageEntity;
 
 @Entity
 @Table(name = "ads")
@@ -21,8 +22,8 @@ public class AdEntity {
     @Column(name = "author", nullable = false)
     private Long author;
 
-    @Column(name = "image")
-    private String image;
+    @OneToOne(mappedBy = "ad", cascade = CascadeType.ALL, orphanRemoval = true)
+    private AdImageEntity image;
 
     @Column(name = "price")
     private Integer price;
@@ -32,5 +33,6 @@ public class AdEntity {
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
+
 }
 

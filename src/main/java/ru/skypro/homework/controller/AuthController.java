@@ -20,6 +20,7 @@ import ru.skypro.homework.dto.Register;
 import ru.skypro.homework.service.AuthService;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Slf4j
 @CrossOrigin(value = "http://localhost:3000")
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Tag(name = "Auth", description = "Controller for user authentication and registration")
 @RestController
 @RequiredArgsConstructor
+
 public class AuthController {
 
     private final AuthService authService;
