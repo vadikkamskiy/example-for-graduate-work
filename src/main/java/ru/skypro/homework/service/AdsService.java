@@ -15,6 +15,8 @@ import jakarta.persistence.EntityNotFoundException;
 import ru.skypro.homework.dto.Ads;
 import ru.skypro.homework.dto.User;
 import ru.skypro.homework.dto.request.CreateOrUpdateAd;
+import ru.skypro.homework.dto.response.AdsResponse;
+import ru.skypro.homework.dto.response.MyAdsResponse;
 import ru.skypro.homework.dto.Ad;
 import ru.skypro.homework.entity.AdEntity;
 import ru.skypro.homework.entity.UserEntity;
@@ -74,6 +76,7 @@ public class AdsService {
         image.setSize(file.getSize());
         image.setPosition(0);
         image.setIsPrimary(true);
+        ad.setImage(image);
         adImageRepository.save(image);
         savedAd.setImage(image);
         savedAd = adsRepository.save(savedAd);
@@ -81,10 +84,10 @@ public class AdsService {
         return adMapper.toDto(savedAd);
     }
 
-    public Ad getAdById(Long id) {
+    public AdsResponse getAdById(Long id) {
         AdEntity adEntity = adsRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Ad not found with id: " + id));
-        return adMapper.toDto(adEntity);
+        return adMapper.toResponse(adEntity);
     }
 
     public void deleteAdById(String username, Long id) {

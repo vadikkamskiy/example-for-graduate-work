@@ -27,6 +27,8 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import ru.skypro.homework.service.AdsService;
 import ru.skypro.homework.dto.Ads;
 import ru.skypro.homework.dto.request.CreateOrUpdateAd;
+import ru.skypro.homework.dto.response.AdsResponse;
+import ru.skypro.homework.dto.response.MyAdsResponse;
 import ru.skypro.homework.dto.Ad;
 
 @Tag(name = "Ads", description = "Controller for managing advertisements")
@@ -43,7 +45,7 @@ public class AdsController {
     @Operation(summary = "Get all ads", description = "Retrieves a list of all advertisements")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public Ads getAds() {
+    public Ads getAds() throws IOException{
         return adsService.getAllAds();
     }
 
@@ -61,7 +63,7 @@ public class AdsController {
     }
     @Operation(summary = "Get ad by ID", description = "Retrieves an advertisement by its ID")
     @GetMapping("/{id}")
-    public Ad getAd(@PathVariable("id") Long id) {
+    public AdsResponse getAd(@PathVariable("id") Long id) throws IOException {
         return adsService.getAdById(id);
     }
     @Operation(summary = "Delete ad by ID", description = "Deletes an advertisement by its ID")
