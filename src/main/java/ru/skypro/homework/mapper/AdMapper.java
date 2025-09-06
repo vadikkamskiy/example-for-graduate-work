@@ -1,15 +1,22 @@
 package ru.skypro.homework.mapper;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 import ru.skypro.homework.dto.Ad;
 import ru.skypro.homework.entity.AdEntity;
@@ -17,24 +24,46 @@ import ru.skypro.homework.entity.UserEntity;
 import ru.skypro.homework.entity.AdImageEntity;
 import ru.skypro.homework.dto.response.AdsResponse;
 
-
+/**
+ * AdMapper без загрузки http(s) изображений в память.
+ * HTTP-изображения откладываются — клиенту нужно использовать URL напрямую.
+ */
 @Component
 public class AdMapper {
 
     private static final Logger log = LoggerFactory.getLogger(AdMapper.class);
     private static final byte[] EMPTY_IMAGE = new byte[0];
 
+    private final ResourceLoader resourceLoader;
+    private final String imagesDir;
+
+    public AdMapper(ResourceLoader resourceLoader,
+                    @Value("${images.dir:}") String imagesDir) {
+        this.resourceLoader = resourceLoader;
+        this.imagesDir = imagesDir != null ? imagesDir.trim() : "";
+    }
+
     public AdsResponse toResponse(AdEntity ad) {
         Objects.requireNonNull(ad, "ad must not be null");
 
         byte[] imageBytes = EMPTY_IMAGE;
         if (ad.getImage() != null && ad.getImage().getUrl() != null && !ad.getImage().getUrl().isBlank()) {
-            try {
-                imageBytes = loadImageFromUrl(ad.getImage().getUrl());
-            } catch (UncheckedIOException ex) {
-                log.warn("Не удалось загрузить изображение для объявления pk={} url={}: {}",
-                        ad.getPk(), ad.getImage().getUrl(), ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
-                imageBytes = EMPTY_IMAGE;
+            String url = ad.getImage().getUrl();
+            if (isHttpUrl(url)) {
+                // НЕ загружаем http(s) картинки в память — даём пустой массив и логируем
+                log.debug("HTTP изображение отложено для объявления pk={} url={}", ad.getPk(), url);
+            } else {
+                try {
+                    imageBytes = loadLocalImage(url);
+                } catch (UncheckedIOException ex) {
+                    log.warn("Не удалось загрузить локальное изображение для объявления pk={} url={} : {}",
+                            ad.getPk(), url, ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
+                    imageBytes = EMPTY_IMAGE;
+                } catch (RuntimeException ex) {
+                    log.warn("Ошибка при загрузке локального изображения для объявления pk={} url={} : {}",
+                            ad.getPk(), url, ex.getMessage());
+                    imageBytes = EMPTY_IMAGE;
+                }
             }
         }
 
@@ -52,12 +81,21 @@ public class AdMapper {
 
         byte[] file = EMPTY_IMAGE;
         if (entity.getImage() != null && entity.getImage().getUrl() != null && !entity.getImage().getUrl().isBlank()) {
-            try {
-                file = loadImageFromUrl(entity.getImage().getUrl());
-            } catch (UncheckedIOException ex) {
-                log.warn("Не удалось загрузить изображение для AdEntity pk={} url={}: {}",
-                        entity.getPk(), entity.getImage().getUrl(), ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
-                file = EMPTY_IMAGE;
+            String url = entity.getImage().getUrl();
+            if (isHttpUrl(url)) {
+                log.debug("HTTP изображение отложено для AdEntity pk={} url={}", entity.getPk(), url);
+            } else {
+                try {
+                    file = loadLocalImage(url);
+                } catch (UncheckedIOException ex) {
+                    log.warn("Не удалось загрузить локальное изображение для AdEntity pk={} url={} : {}",
+                            entity.getPk(), url, ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
+                    file = EMPTY_IMAGE;
+                } catch (RuntimeException ex) {
+                    log.warn("Ошибка при загрузке локального изображения для AdEntity pk={} url={} : {}",
+                            entity.getPk(), url, ex.getMessage());
+                    file = EMPTY_IMAGE;
+                }
             }
         }
 
@@ -72,19 +110,26 @@ public class AdMapper {
         );
     }
 
-    public static Ad toDto(AdEntity e, AdImageEntity image) {
+    public Ad toDto(AdEntity e, AdImageEntity image) {
         Objects.requireNonNull(e, "AdEntity must not be null");
 
         byte[] file = EMPTY_IMAGE;
         if (image != null && image.getUrl() != null && !image.getUrl().isBlank()) {
-            try {
-                file = loadImageFromUrl(image.getUrl());
-            } catch (UncheckedIOException ex) {
-                LoggerFactory.getLogger(AdMapper.class).warn(
-                        "Не удалось загрузить изображение (static) для объявления pk={} url={}: {}",
-                        e.getPk(), image.getUrl(), ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage()
-                );
-                file = EMPTY_IMAGE;
+            String url = image.getUrl();
+            if (isHttpUrl(url)) {
+                log.debug("HTTP изображение отложено (toDto) для объявления pk={} url={}", e.getPk(), url);
+            } else {
+                try {
+                    file = loadLocalImage(url);
+                } catch (UncheckedIOException ex) {
+                    log.warn("Не удалось загрузить локальное изображение (toDto) для объявления pk={} url={} : {}",
+                            e.getPk(), url, ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
+                    file = EMPTY_IMAGE;
+                } catch (RuntimeException ex) {
+                    log.warn("Ошибка при загрузке локального изображения (toDto) для объявления pk={} url={} : {}",
+                            e.getPk(), url, ex.getMessage());
+                    file = EMPTY_IMAGE;
+                }
             }
         }
 
@@ -112,24 +157,90 @@ public class AdMapper {
                 .description(dto.getDescription())
                 .build();
     }
+    private static boolean isHttpUrl(String url) {
+        String lower = url.toLowerCase();
+        return lower.startsWith("http://") || lower.startsWith("https://");
+    }
 
-    private static byte[] loadImageFromUrl(String imageUrl) {
+    private byte[] loadLocalImage(String imageUrl) {
         if (imageUrl == null || imageUrl.isBlank()) {
             return EMPTY_IMAGE;
         }
 
+        final String raw = imageUrl;
+        // 1) унифицируем слэши и пробелы
+        final String normalized = raw.replace('\\', '/').trim();
+
+        // 2) имя файла (для images.dir)
+        final String filename = Paths.get(normalized).getFileName().toString();
+
+        // 3) если путь не абсолютный — уберём ведущие слэши для относительной проверки
+        final boolean looksAbsolute = Paths.get(normalized).isAbsolute() || normalized.matches("^[A-Za-z]:/.*");
+        final String trimmedForRelative = looksAbsolute ? normalized : normalized.replaceFirst("^/+", "");
+
+        // будем собирать все проверенные варианты, чтобы отдать их в сообщении об ошибке
+        List<String> tried = new ArrayList<>();
+
         try {
-            if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
-                try (InputStream in = new URL(imageUrl).openStream()) {
+            // A) images.dir + filename (рекомендуемая стратегия хранения)
+            if (imagesDir != null && !imagesDir.isBlank()) {
+                Path candidate = Paths.get(imagesDir).resolve(filename);
+                tried.add(candidate.toAbsolutePath().toString());
+                log.debug("Пробуем images.dir: {}", candidate.toAbsolutePath());
+                if (Files.exists(candidate)) {
+                    return Files.readAllBytes(candidate);
+                }
+            }
+
+            // B) file: URI
+            if (normalized.startsWith("file:")) {
+                try {
+                    URI uri = new URI(normalized);
+                    Path p = Paths.get(uri);
+                    tried.add(p.toAbsolutePath().toString());
+                    log.debug("Пробуем file URI: {}", p.toAbsolutePath());
+                    if (Files.exists(p)) {
+                        return Files.readAllBytes(p);
+                    }
+                } catch (URISyntaxException ex) {
+                    log.debug("Некорректный file URI: {}", normalized);
+                }
+            }
+
+            // C) прямой путь как дано
+            Path direct = Paths.get(normalized);
+            tried.add(direct.toAbsolutePath().toString());
+            log.debug("Пробуем прямой путь: {}", direct.toAbsolutePath());
+            if (Files.exists(direct)) {
+                return Files.readAllBytes(direct);
+            }
+
+            // D) относительный к user.dir
+            Path relative = Paths.get(System.getProperty("user.dir")).resolve(trimmedForRelative);
+            tried.add(relative.toAbsolutePath().toString());
+            log.debug("Пробуем относительный к user.dir: {}", relative.toAbsolutePath());
+            if (Files.exists(relative)) {
+                return Files.readAllBytes(relative);
+            }
+
+            // E) classpath
+            String cpCandidate = trimmedForRelative; // без ведущих слэшей
+            Resource resource = resourceLoader.getResource("classpath:" + cpCandidate);
+            tried.add("classpath:" + cpCandidate);
+            log.debug("Пробуем classpath: classpath:{}", cpCandidate);
+            if (resource.exists()) {
+                try (InputStream in = resource.getInputStream()) {
                     return in.readAllBytes();
                 }
-            } else {
-                return Files.readAllBytes(Paths.get(imageUrl));
             }
+
+            // Ничего не сработало — бросаем подробное исключение
+            String msg = "Локальный ресурс не найден. raw='" + raw + "', normalized='" + normalized
+                    + "'. Проверены пути: " + String.join(" | ", tried);
+            throw new IOException(msg);
+
         } catch (IOException ex) {
-            throw new UncheckedIOException("Не удалось загрузить изображение: " + imageUrl, ex);
-        } catch (RuntimeException ex) {
-            throw new RuntimeException("Ошибка при загрузке изображения: " + imageUrl, ex);
+            throw new UncheckedIOException(ex);
         }
     }
 }

@@ -85,8 +85,10 @@ public class AdsService {
     }
 
     public AdsResponse getAdById(Long id) {
+        AdImageEntity image = adImageRepository.findByAd_Pk(id).get();
         AdEntity adEntity = adsRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Ad not found with id: " + id));
+        adEntity.setImage(image);
         return adMapper.toResponse(adEntity);
     }
 
@@ -163,7 +165,7 @@ public class AdsService {
     }
 
     public String saveFileLocally(MultipartFile file) throws IOException {
-        String folder = "uploads/"; 
+        String folder = "src\\images"; 
         String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
         Path path = Paths.get(folder, filename);
 
