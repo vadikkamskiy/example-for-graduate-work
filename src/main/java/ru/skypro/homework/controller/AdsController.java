@@ -63,7 +63,8 @@ public class AdsController {
     }
     @Operation(summary = "Get ad by ID", description = "Retrieves an advertisement by its ID")
     @GetMapping("/{id}")
-    public AdsResponse getAd(@PathVariable("id") Long id) throws IOException {
+    @ResponseStatus(HttpStatus.OK)
+    public AdsResponse getAd(@RequestParam("id") int id) throws IOException {
         return adsService.getAdById(id);
     }
     @Operation(summary = "Delete ad by ID", description = "Deletes an advertisement by its ID")

@@ -84,9 +84,9 @@ public class AdsService {
         return adMapper.toDto(savedAd);
     }
 
-    public AdsResponse getAdById(Long id) {
-        AdImageEntity image = adImageRepository.findByAd_Pk(id).get();
-        AdEntity adEntity = adsRepository.findById(id)
+    public AdsResponse getAdById(int id) {
+        AdImageEntity image = adImageRepository.findByAd_Pk(Long.valueOf(id)).get();
+        AdEntity adEntity = adsRepository.findById(Long.valueOf(id))
                 .orElseThrow(() -> new EntityNotFoundException("Ad not found with id: " + id));
         adEntity.setImage(image);
         return adMapper.toResponse(adEntity);
