@@ -54,7 +54,7 @@ public class UserController {
 
     @Operation(summary = "Update user image", description = "Update the user's profile image")
     @ResponseStatus(HttpStatus.OK)
-    @PutMapping("/me/image")
+    @PatchMapping("/me/image")
     public void updateUserImage(@AuthenticationPrincipal UserDetails userDetails,
                                 @RequestParam("image") MultipartFile image) {
         usersService.updateUserImage(userDetails.getUsername(), image);

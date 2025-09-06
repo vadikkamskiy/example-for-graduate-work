@@ -37,6 +37,6 @@ public class UserEntity {
     @Column(name = "role", nullable = false)
     private Role role;
 
-    @Column(name = "avatar_data", columnDefinition = "BYTEA")
+    @Column(name = "image", columnDefinition = "BYTEA")
     private byte[] image;
 }

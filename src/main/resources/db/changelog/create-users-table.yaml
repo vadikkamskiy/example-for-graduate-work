@@ -34,7 +34,6 @@ databaseChangeLog:
                   type: VARCHAR(255)
                   constraints:
                     nullable: false
-                  remarks: "Храним хеш пароля (BCrypt/Argon2), не plain text"
               - column:
                   name: phone
                   type: VARCHAR(20)
@@ -47,11 +46,10 @@ databaseChangeLog:
                   defaultValue: 'USER'
                   constraints:
                     nullable: false
-                  remarks: "В коде — enum; в БД — строка"
               - column:
-                  name: avatar_data
+                  name: image
                   type: BYTEA
-                  remarks: "Храним бинарник аватара прямо в БД (для прототипа). Для прод — рекомендовано S3/MinIO."
+                  remarks: "Храним бинарник аватара прямо в БД"
               - column:
                   name: created_at
                   type: TIMESTAMP
@@ -139,11 +137,9 @@ databaseChangeLog:
               - column:
                   name: storage_key
                   type: VARCHAR(1024)
-                  remarks: "ключ/идентификатор в объектном хранилище или локальный путь; nullable если используем url"
               - column:
                   name: url
                   type: VARCHAR(2048)
-                  remarks: "опционально — CDN/прямой URL"
               - column:
                   name: content_type
                   type: VARCHAR(100)

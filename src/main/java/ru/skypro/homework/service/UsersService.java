@@ -41,7 +41,8 @@ public class UsersService {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getPhone(),
-                user.getRole()
+                user.getRole(),
+                user.getImage()
         );
     }
     public UserResponse updateUser(String username, UpdateUserRequest updateUser) {
@@ -64,7 +65,8 @@ public class UsersService {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getPhone(),
-                user.getRole()
+                user.getRole(),
+                user.getImage()
         );
     }
 
@@ -87,7 +89,6 @@ public class UsersService {
     public void updateUserImage(String username, MultipartFile image) {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
-
         try {
             user.setImage(image.getBytes());
             userRepository.save(user);
