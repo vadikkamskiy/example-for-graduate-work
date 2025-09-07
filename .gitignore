@@ -39,6 +39,7 @@ build.gradle
 gradlew
 gradlew.bat
 settings.gradle
+.gitignore
 
 .env
 

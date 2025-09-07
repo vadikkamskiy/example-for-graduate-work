@@ -7,5 +7,5 @@ import ru.skypro.homework.entity.AdEntity;
 
 public interface AdsRepository extends JpaRepository<AdEntity, Long> {
     public List<AdEntity> findByAuthor(Long author);
-    AdEntity findByPk(Long pk);
+    Optional<AdEntity> findByPk(Long pk);
 }

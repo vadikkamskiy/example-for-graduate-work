@@ -14,12 +14,14 @@ public class UserResponse {
     private String lastName;
     private String phone;
     private Role role;
+    private byte[] image;
 
-    public UserResponse(String username, String firstName, String lastName, String phone, Role role) {
+    public UserResponse(String username, String firstName, String lastName, String phone, Role role, byte[] image) {
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
         this.role = role;
+        this.image = image;
     }
 }

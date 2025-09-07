@@ -15,6 +15,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpMethod;
 
 
 @Configuration
@@ -26,19 +27,9 @@ public class WebSecurityConfig {
         "/v3/api-docs/**",
         "/webjars/**",
         "/login",
-        "/register"
+        "/register",
+        "/ads/**"
     };
-
-    @Bean
-    @Profile("test")
-    public InMemoryUserDetailsManager inMemoryUserDetailsManager(PasswordEncoder passwordEncoder) {
-        UserDetails user = User.builder()
-                .username("user@gmail.com")
-                .password(passwordEncoder.encode("password"))
-                .roles("USER")
-                .build();
-        return new InMemoryUserDetailsManager(user);
-    }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
@@ -60,10 +51,14 @@ public class WebSecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers(AUTH_WHITELIST).permitAll()
-                    .requestMatchers("/ads/**", "/users/**").authenticated()
-                    .anyRequest().denyAll()
+                .requestMatchers(HttpMethod.GET, AUTH_WHITELIST).permitAll()         
+                .requestMatchers(HttpMethod.POST, "/login", "/register").permitAll()  
+                .requestMatchers("/**").authenticated()    
+                .requestMatchers(HttpMethod.PATCH, "/user/**", "/ads/**").authenticated() 
+                .requestMatchers(HttpMethod.DELETE, "/user/**", "/ads/**").authenticated()
+                .anyRequest().denyAll()                                             
             )
+
             .httpBasic(Customizer.withDefaults())
             .cors(cors -> {})
             .authenticationProvider(provider);

@@ -13,7 +13,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import ru.skypro.homework.dto.Role;
 
 
-@Profile("!test")
 @Service
 public class CustomUserDetailsService implements UserDetailsManager {
 

@@ -51,7 +51,7 @@ public class AuthServiceImpl implements AuthService {
     public boolean register(Register register){
         try {
             if (userRepository.findByUsername(register.getUsername()).isPresent()) {
-                return false; // User already exists
+                return false;
             }
             UserEntity userEntity = new UserEntity();
             userEntity.setUsername(register.getUsername());
@@ -59,6 +59,7 @@ public class AuthServiceImpl implements AuthService {
             userEntity.setLastName(register.getLastName());
             userEntity.setPhone(register.getPhone());
             userEntity.setPassword(encoder.encode(register.getPassword()));
+            userEntity.setRole(register.getRole());
             userRepository.save(userEntity);
             return true;
         } catch (AuthenticationException e) {

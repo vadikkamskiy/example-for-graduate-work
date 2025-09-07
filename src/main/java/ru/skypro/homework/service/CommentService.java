@@ -3,6 +3,7 @@ package ru.skypro.homework.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
 import ru.skypro.homework.dto.Comments;
 import ru.skypro.homework.entity.CommentEntity;
 import ru.skypro.homework.entity.UserEntity;
@@ -15,6 +16,7 @@ import ru.skypro.homework.dto.User;
 import ru.skypro.homework.dto.request.CommentRequest;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CommentService {
@@ -39,6 +41,7 @@ public class CommentService {
         return new Comments(comments.size(), comments);
     }
 
+    @Transactional
     public Comment addComment(String username, Long adId, String comment) {
         UserEntity user = userRepository.findByUsername(username).get();
         if (user == null) {
@@ -47,6 +50,7 @@ public class CommentService {
         CommentEntity entity = new CommentEntity();
         entity.setAd(adId);
         entity.setAuthor(user.getPk());
+        entity.setAuthorAvatar(user.getImage());
         entity.setCreatedAt(LocalDateTime.now());
         entity.setText(comment);
         CommentEntity savedEntity = commentRepository.save(entity);
