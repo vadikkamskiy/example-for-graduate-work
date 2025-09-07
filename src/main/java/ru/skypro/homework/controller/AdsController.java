@@ -23,11 +23,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.http.MediaType;
 
 import ru.skypro.homework.service.AdsService;
 import ru.skypro.homework.dto.Ads;
 import ru.skypro.homework.dto.request.CreateOrUpdateAd;
 import ru.skypro.homework.dto.response.AdsResponse;
+import ru.skypro.homework.dto.response.CurrentAdResponse;
 import ru.skypro.homework.dto.response.MyAdsResponse;
 import ru.skypro.homework.dto.Ad;
 
@@ -45,7 +47,7 @@ public class AdsController {
     @Operation(summary = "Get all ads", description = "Retrieves a list of all advertisements")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public Ads getAds() throws IOException{
+    public MyAdsResponse getAds() throws IOException{
         return adsService.getAllAds();
     }
 
@@ -62,9 +64,9 @@ public class AdsController {
         }   
     }
     @Operation(summary = "Get ad by ID", description = "Retrieves an advertisement by its ID")
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public AdsResponse getAd(@RequestParam("id") int id) throws IOException {
+    public CurrentAdResponse getAd(@PathVariable("id") Long id) throws IOException {
         return adsService.getAdById(id);
     }
     @Operation(summary = "Delete ad by ID", description = "Deletes an advertisement by its ID")
@@ -82,15 +84,15 @@ public class AdsController {
 
     @Operation(summary = "Get user's ads", description = "Retrieves all advertisements created by the user")
     @GetMapping("/me")
-    public Ads getMyAds(@AuthenticationPrincipal UserDetails userDetails) {
+    public MyAdsResponse getMyAds(@AuthenticationPrincipal UserDetails userDetails) {
         return adsService.getAdsByUser(userDetails.getUsername());
     }
     @Operation(summary = "Update ads image", description = "Sets a new image for an advertisement")
     @PatchMapping("/{id}/image")
     @ResponseStatus(HttpStatus.OK)
-    public Ad updateAdImage(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long id, @RequestParam("file") MultipartFile file) {
+    public Ad updateAdImage(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long id, @RequestParam("image") MultipartFile image) {
         try {
-            return adsService.updateAdImage(userDetails.getUsername(), id, file);
+            return adsService.updateAdImage(userDetails.getUsername(), id, image);
         } catch (IOException e) {
             throw new RuntimeException("Failed to read uploaded file", e);
         }    

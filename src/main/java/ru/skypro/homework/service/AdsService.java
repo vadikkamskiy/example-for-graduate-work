@@ -16,6 +16,7 @@ import ru.skypro.homework.dto.Ads;
 import ru.skypro.homework.dto.User;
 import ru.skypro.homework.dto.request.CreateOrUpdateAd;
 import ru.skypro.homework.dto.response.AdsResponse;
+import ru.skypro.homework.dto.response.CurrentAdResponse;
 import ru.skypro.homework.dto.response.MyAdsResponse;
 import ru.skypro.homework.dto.Ad;
 import ru.skypro.homework.entity.AdEntity;
@@ -44,11 +45,11 @@ public class AdsService {
         this.adImageRepository = adImageRepository;
     }
 
-    public Ads getAllAds() {
-        List<Ad> ads = adsRepository.findAll().stream()
-                .map(adMapper::toDto)
+    public MyAdsResponse getAllAds() {
+        List<AdsResponse> ads = adsRepository.findAll().stream()
+                .map(adMapper::toResponse)
                 .collect(Collectors.toList());
-        return new Ads(ads.size(), ads);
+        return new MyAdsResponse(ads.size(), ads);
     }
     public Ad createAd(String username, CreateOrUpdateAd adDto, MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
@@ -65,7 +66,7 @@ public class AdsService {
         ad.setAuthor(user.getPk());
         AdEntity savedAd = adsRepository.save(ad);
 
-        String storageKey = saveFileLocally(file);
+        String storageKey = saveFileLocally(file,null);
         String url = "/src/images/" + storageKey;
 
         AdImageEntity image = new AdImageEntity();
@@ -84,12 +85,13 @@ public class AdsService {
         return adMapper.toDto(savedAd);
     }
 
-    public AdsResponse getAdById(int id) {
-        AdImageEntity image = adImageRepository.findByAd_Pk(Long.valueOf(id)).get();
-        AdEntity adEntity = adsRepository.findById(Long.valueOf(id))
+    public CurrentAdResponse getAdById(Long id) {
+        AdImageEntity image = adImageRepository.findByAd_Pk(id).get();
+        UserEntity user = userRepository.findById(image.getAd().getAuthor()).get();
+        AdEntity adEntity = adsRepository.findByPk(id)
                 .orElseThrow(() -> new EntityNotFoundException("Ad not found with id: " + id));
         adEntity.setImage(image);
-        return adMapper.toResponse(adEntity);
+        return adMapper.toCurrentResponse(adEntity,user);
     }
 
     public void deleteAdById(String username, Long id) {
@@ -118,13 +120,13 @@ public class AdsService {
         return adMapper.toDto(updatedAd);
     }
 
-    public Ads getAdsByUser(String username) {
+    public MyAdsResponse getAdsByUser(String username) {
         UserEntity userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        List<Ad> ads = adsRepository.findByAuthor(userEntity.getPk()).stream()
-                .map(adMapper::toDto)
+        List<AdsResponse> ads = adsRepository.findByAuthor(userEntity.getPk()).stream()
+                .map(adMapper::toResponse)
                 .collect(Collectors.toList());
-        return new Ads(ads.size(), ads);
+        return new MyAdsResponse(ads.size(), ads);
     }
 
     public Ad updateAdImage(String username, Long adId, MultipartFile file) throws IOException {
@@ -142,21 +144,26 @@ public class AdsService {
             throw new RuntimeException("User is not the author of the ad");
         }
 
-        String storageKey = saveFileLocally(file); 
-        String url = "/uploads/" + storageKey;
-
-        AdImageEntity image = adImageRepository.findByAd_Pk(adId)
-                .orElseGet(() -> new AdImageEntity());
-
-        image.setAd(ad);
-        image.setStorageKey(storageKey);
-        image.setUrl(url);
-        // image.setFileName(file.getOriginalFilename());
-        image.setContentType(file.getContentType());
-        image.setSize(file.getSize());
-        image.setPosition(0);
-        image.setIsPrimary(true);
-
+        String storageKey = saveFileLocally(file, ad.getImage().getStorageKey()); 
+        String url = "/src/images/" + storageKey;
+        AdImageEntity image = new AdImageEntity();
+        if(adImageRepository.findByAd_Pk(adId).isEmpty()){
+            image.setAd(ad);
+            image.setStorageKey(storageKey);
+            image.setUrl(url);
+            image.setContentType(file.getContentType());
+            image.setSize(file.getSize());
+            image.setPosition(0);
+            image.setIsPrimary(true);
+        }else{
+            image = adImageRepository.findByAd_Pk(adId).get();
+            image.setStorageKey(storageKey);
+            image.setUrl(url);
+            image.setContentType(file.getContentType());
+            image.setSize(file.getSize());
+            image.setPosition(0);
+            image.setIsPrimary(true);
+        }
         adImageRepository.save(image);
 
         ad.setImage(image);
@@ -164,8 +171,12 @@ public class AdsService {
         return adMapper.toDto(ad);
     }
 
-    public String saveFileLocally(MultipartFile file) throws IOException {
-        String folder = "src\\images"; 
+    public String saveFileLocally(MultipartFile file, String name) throws IOException {
+        String folder = "src/images/"; 
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File must be provided");
+        }
+        
         String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
         Path path = Paths.get(folder, filename);
 
