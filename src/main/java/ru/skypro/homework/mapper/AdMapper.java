@@ -67,7 +67,7 @@ public class AdMapper {
                 }
             }
         }
-        String image = ad.getImage().getUrl()
+        String image = ad.getImage().getUrl();
 
         return new AdsResponse(
                 ad.getAuthor(),
@@ -162,13 +162,14 @@ public class AdMapper {
         return lower.startsWith("http://") || lower.startsWith("https://");
     }
 
-    private String loadLocalImage(String imageUrl) {
+        private byte[] loadLocalImage(String imageUrl) {
         if (imageUrl == null || imageUrl.isBlank()) {
-            return null;
+            return EMPTY_IMAGE;
         }
 
         final String raw = imageUrl;
         final String normalized = raw.replace('\\', '/').trim();
+
         final String filename = Paths.get(normalized).getFileName().toString();
 
         final boolean looksAbsolute = Paths.get(normalized).isAbsolute() || normalized.matches("^[A-Za-z]:/.*");
@@ -182,10 +183,11 @@ public class AdMapper {
                 tried.add(candidate.toAbsolutePath().toString());
                 log.debug("Пробуем images.dir: {}", candidate.toAbsolutePath());
                 if (Files.exists(candidate)) {
-                    return candidate.toAbsolutePath().toString();
+                    return Files.readAllBytes(candidate);
                 }
             }
 
+            // B) file: URI
             if (normalized.startsWith("file:")) {
                 try {
                     URI uri = new URI(normalized);
@@ -193,35 +195,41 @@ public class AdMapper {
                     tried.add(p.toAbsolutePath().toString());
                     log.debug("Пробуем file URI: {}", p.toAbsolutePath());
                     if (Files.exists(p)) {
-                        return p.toAbsolutePath().toString();
+                        return Files.readAllBytes(p);
                     }
                 } catch (URISyntaxException ex) {
                     log.debug("Некорректный file URI: {}", normalized);
                 }
             }
 
+            // C) прямой путь как дано
             Path direct = Paths.get(normalized);
             tried.add(direct.toAbsolutePath().toString());
             log.debug("Пробуем прямой путь: {}", direct.toAbsolutePath());
             if (Files.exists(direct)) {
-                return direct.toAbsolutePath().toString();
+                return Files.readAllBytes(direct);
             }
 
+            // D) относительный к user.dir
             Path relative = Paths.get(System.getProperty("user.dir")).resolve(trimmedForRelative);
             tried.add(relative.toAbsolutePath().toString());
             log.debug("Пробуем относительный к user.dir: {}", relative.toAbsolutePath());
             if (Files.exists(relative)) {
-                return relative.toAbsolutePath().toString();
+                return Files.readAllBytes(relative);
             }
 
-            String cpCandidate = trimmedForRelative;
+            // E) classpath
+            String cpCandidate = trimmedForRelative; // без ведущих слэшей
             Resource resource = resourceLoader.getResource("classpath:" + cpCandidate);
             tried.add("classpath:" + cpCandidate);
             log.debug("Пробуем classpath: classpath:{}", cpCandidate);
             if (resource.exists()) {
-                return resource.getFile().getAbsolutePath();
+                try (InputStream in = resource.getInputStream()) {
+                    return in.readAllBytes();
+                }
             }
 
+            // Ничего не сработало — бросаем подробное исключение
             String msg = "Локальный ресурс не найден. raw='" + raw + "', normalized='" + normalized
                     + "'. Проверены пути: " + String.join(" | ", tried);
             throw new IOException(msg);

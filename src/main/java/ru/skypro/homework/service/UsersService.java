@@ -37,6 +37,7 @@ public class UsersService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
         return new UserResponse(
+                user.getPk(),
                 user.getUsername(),
                 user.getFirstName(),
                 user.getLastName(),

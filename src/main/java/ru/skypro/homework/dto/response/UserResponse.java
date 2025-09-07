@@ -2,13 +2,16 @@ package ru.skypro.homework.dto.response;
 import ru.skypro.homework.dto.Role;
 
 import lombok.Data;
+import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class UserResponse {
 
+    private Long id;
     private String username;
     private String firstName;
     private String lastName;

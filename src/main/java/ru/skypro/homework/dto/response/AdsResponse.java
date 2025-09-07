@@ -8,7 +8,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class AdsResponse {
     Long author;
-    String image;
+    byte[] image;
     long pk;
     int price;
     String title;
