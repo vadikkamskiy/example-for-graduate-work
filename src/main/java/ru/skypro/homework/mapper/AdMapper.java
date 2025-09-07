@@ -23,6 +23,7 @@ import ru.skypro.homework.entity.AdEntity;
 import ru.skypro.homework.entity.UserEntity;
 import ru.skypro.homework.entity.AdImageEntity;
 import ru.skypro.homework.dto.response.AdsResponse;
+import ru.skypro.homework.dto.response.CurrentAdResponse;
 
 /**
  * AdMapper без загрузки http(s) изображений в память.
@@ -50,7 +51,6 @@ public class AdMapper {
         if (ad.getImage() != null && ad.getImage().getUrl() != null && !ad.getImage().getUrl().isBlank()) {
             String url = ad.getImage().getUrl();
             if (isHttpUrl(url)) {
-                // НЕ загружаем http(s) картинки в память — даём пустой массив и логируем
                 log.debug("HTTP изображение отложено для объявления pk={} url={}", ad.getPk(), url);
             } else {
                 try {
@@ -71,6 +71,42 @@ public class AdMapper {
                 ad.getAuthor(),
                 imageBytes,
                 ad.getPk(),
+                ad.getPrice(),
+                ad.getTitle()
+        );
+    }
+
+    public CurrentAdResponse toCurrentResponse(AdEntity ad,UserEntity user) {
+        Objects.requireNonNull(ad, "ad must not be null");
+
+        byte[] imageBytes = EMPTY_IMAGE;
+        if (ad.getImage() != null && ad.getImage().getUrl() != null && !ad.getImage().getUrl().isBlank()) {
+            String url = ad.getImage().getUrl();
+            if (isHttpUrl(url)) {
+                log.debug("HTTP изображение отложено для объявления pk={} url={}", ad.getPk(), url);
+            } else {
+                try {
+                    imageBytes = loadLocalImage(url);
+                } catch (UncheckedIOException ex) {
+                    log.warn("Не удалось загрузить локальное изображение для объявления pk={} url={} : {}",
+                            ad.getPk(), url, ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
+                    imageBytes = EMPTY_IMAGE;
+                } catch (RuntimeException ex) {
+                    log.warn("Ошибка при загрузке локального изображения для объявления pk={} url={} : {}",
+                            ad.getPk(), url, ex.getMessage());
+                    imageBytes = EMPTY_IMAGE;
+                }
+            }
+        }
+
+        return new CurrentAdResponse(
+                ad.getPk(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getUsername(),
+                ad.getDescription(),
+                loadLocalImage(ad.getImage().getUrl()),
+                user.getPhone(),
                 ad.getPrice(),
                 ad.getTitle()
         );
@@ -168,21 +204,16 @@ public class AdMapper {
         }
 
         final String raw = imageUrl;
-        // 1) унифицируем слэши и пробелы
         final String normalized = raw.replace('\\', '/').trim();
 
-        // 2) имя файла (для images.dir)
         final String filename = Paths.get(normalized).getFileName().toString();
 
-        // 3) если путь не абсолютный — уберём ведущие слэши для относительной проверки
         final boolean looksAbsolute = Paths.get(normalized).isAbsolute() || normalized.matches("^[A-Za-z]:/.*");
         final String trimmedForRelative = looksAbsolute ? normalized : normalized.replaceFirst("^/+", "");
 
-        // будем собирать все проверенные варианты, чтобы отдать их в сообщении об ошибке
         List<String> tried = new ArrayList<>();
 
         try {
-            // A) images.dir + filename (рекомендуемая стратегия хранения)
             if (imagesDir != null && !imagesDir.isBlank()) {
                 Path candidate = Paths.get(imagesDir).resolve(filename);
                 tried.add(candidate.toAbsolutePath().toString());
